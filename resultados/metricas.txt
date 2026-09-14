@@ -1,0 +1,20 @@
+RESULTADOS DO MODELO COVID
+==================================================
+
+Acurácia: 0.7370
+
+Relatório de classificação:
+              precision    recall  f1-score   support
+
+        Alto       0.70      0.78      0.74       233
+       Baixo       0.68      0.80      0.74       236
+    Moderado       0.79      0.69      0.74       531
+
+    accuracy                           0.74      1000
+   macro avg       0.72      0.76      0.74      1000
+weighted avg       0.74      0.74      0.74      1000
+
+Matriz de confusão:
+[[189  47   0]
+ [ 87 366  78]
+ [  0  51 182]]

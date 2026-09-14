@@ -1,0 +1,17 @@
+﻿variavel,importancia
+numericas__saturacao_o2,0.22961560034748163
+numericas__idade,0.18048426875140194
+numericas__falta_ar,0.14058433940304224
+numericas__frequencia_respiratoria,0.08340061267236738
+numericas__temperatura,0.08036082936263853
+numericas__frequencia_cardiaca,0.0681439765386706
+numericas__pressao_sistolica,0.06313187830895046
+numericas__tosse,0.02309779562177827
+numericas__febre,0.02201320324987295
+numericas__obesidade,0.018806995576748618
+numericas__diabetes,0.018802898437981656
+numericas__hipertensao,0.018479177020556365
+numericas__doenca_cardiovascular,0.017918004982874654
+numericas__dor_peito,0.015332209399670768
+categoricas__sexo_Masculino,0.009971281209095115
+categoricas__sexo_Feminino,0.009856929116868874
