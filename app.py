@@ -3,51 +3,174 @@ import joblib
 import pandas as pd
 import streamlit as st
 ##################### Gerar Senhas
-def usuarios_configurados():
+import streamlit as st
+import hmac
+
+# ============================================================
+# CONFIGURAÇÃO
+# ============================================================
+
+st.set_page_config(
+    page_title="Login",
+    page_icon="🔐",
+    layout="centered"
+)
+
+
+# ============================================================
+# FUNÇÃO PARA LER OS USUÁRIOS
+# ============================================================
+
+def carregar_usuarios():
+
     try:
-        return st.secrets['usuarios']
+        return st.secrets["usuarios"]
+
     except Exception:
         return None
 
+
+# ============================================================
+# FUNÇÃO DE AUTENTICAÇÃO
+# ============================================================
+
 def autenticar(usuario, senha):
-    usuarios = usuarios_configurados()
-    if usuarios is None or usuario not in usuarios:
-        return False, 'Usuário ou senha inválidos.'
-    senha_correta = str(usuarios[usuario]['senha'])
-    if hmac.compare_digest(str(senha), senha_correta):
-        return True, str(usuarios[usuario].get('nome', usuario))
-    return False, 'Usuário ou senha inválidos.'
 
-def login():
-    st.markdown('<h1 style="text-align:center">🔐 Acesso ao sistema</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align:center">Entre com seu usuário e senha</p>', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        usuario = st.text_input('Usuário')
-        senha = st.text_input('Senha', type='password')
-        if st.button('Entrar', type='primary', use_container_width=True):
-            if not usuario or not senha:
-                st.error('Informe usuário e senha.')
-            else:
-                ok, resultado = autenticar(usuario, senha)
-                if ok:
-                    st.session_state.autenticado = True
-                    st.session_state.usuario = usuario
-                    st.session_state.nome_usuario = resultado
-                    st.rerun()
-                else:
-                    st.error(resultado)
+    usuarios = carregar_usuarios()
 
-if 'autenticado' not in st.session_state:
+    if usuarios is None:
+        return False, "Usuários ainda não configurados."
+
+    if usuario not in usuarios:
+        return False, "Usuário ou senha inválidos."
+
+    senha_correta = str(
+        usuarios[usuario]["senha"]
+    )
+
+    if hmac.compare_digest(
+        str(senha),
+        senha_correta
+    ):
+
+        nome = str(
+            usuarios[usuario].get(
+                "nome",
+                usuario
+            )
+        )
+
+        return True, nome
+
+    return False, "Usuário ou senha inválidos."
+
+
+# ============================================================
+# CONTROLE DA SESSÃO
+# ============================================================
+
+if "autenticado" not in st.session_state:
+
     st.session_state.autenticado = False
 
+
+# ============================================================
+# TELA DE LOGIN
+# ============================================================
+
 if not st.session_state.autenticado:
-    login()
+
+    st.title("🔐 Acesso ao sistema")
+
+    st.write(
+        "Digite seu usuário e sua senha para continuar."
+    )
+
+    usuario = st.text_input(
+        "Usuário",
+        placeholder="Digite seu usuário"
+    )
+
+    senha = st.text_input(
+        "Senha",
+        type="password",
+        placeholder="Digite sua senha"
+    )
+
+    entrar = st.button(
+        "Entrar",
+        use_container_width=True,
+        type="primary"
+    )
+
+    if entrar:
+
+        if not usuario or not senha:
+
+            st.warning(
+                "Informe o usuário e a senha."
+            )
+
+        else:
+
+            sucesso, resultado = autenticar(
+                usuario,
+                senha
+            )
+
+            if sucesso:
+
+                st.session_state.autenticado = True
+
+                st.session_state.usuario = usuario
+
+                st.session_state.nome_usuario = resultado
+
+                st.rerun()
+
+            else:
+
+                st.error(resultado)
+
     st.stop()
 
-st.title("Modelo de Recomendação do Instituto Inteligência de Dados - IID")
+
+# ============================================================
+# ÁREA PROTEGIDA
+# ============================================================
+
+nome_usuario = st.session_state.get(
+    "nome_usuario",
+    st.session_state.get(
+        "usuario",
+        ""
+    )
+)
+
+st.success(
+    f"Login realizado com sucesso! Olá, {nome_usuario}."
+)
 
 
+# ============================================================
+# BOTÃO SAIR
+# ============================================================
+
+if st.button("🚪 Sair"):
+
+    st.session_state.autenticado = False
+
+    st.session_state.pop(
+        "usuario",
+        None
+    )
+
+    st.session_state.pop(
+        "nome_usuario",
+        None
+    )
+
+    st.rerun()
 ####################Fim do Código Gerar Senha
 
 # ============================================================
