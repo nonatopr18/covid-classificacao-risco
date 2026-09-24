@@ -3,34 +3,46 @@ import joblib
 import pandas as pd
 import streamlit as st
 ##################### Gerar Senhas
-import streamlit as st
+def usuarios_configurados():
+    try:
+        return st.secrets['usuarios']
+    except Exception:
+        return None
 
-def verificar_senha():
+def autenticar(usuario, senha):
+    usuarios = usuarios_configurados()
+    if usuarios is None or usuario not in usuarios:
+        return False, 'Usuário ou senha inválidos.'
+    senha_correta = str(usuarios[usuario]['senha'])
+    if hmac.compare_digest(str(senha), senha_correta):
+        return True, str(usuarios[usuario].get('nome', usuario))
+    return False, 'Usuário ou senha inválidos.'
 
-    if "autenticado" not in st.session_state:
-        st.session_state.autenticado = False
+def login():
+    st.markdown('<h1 style="text-align:center">🔐 Acesso ao sistema</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align:center">Entre com seu usuário e senha</p>', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        usuario = st.text_input('Usuário')
+        senha = st.text_input('Senha', type='password')
+        if st.button('Entrar', type='primary', use_container_width=True):
+            if not usuario or not senha:
+                st.error('Informe usuário e senha.')
+            else:
+                ok, resultado = autenticar(usuario, senha)
+                if ok:
+                    st.session_state.autenticado = True
+                    st.session_state.usuario = usuario
+                    st.session_state.nome_usuario = resultado
+                    st.rerun()
+                else:
+                    st.error(resultado)
 
-    if st.session_state.autenticado:
-        return True
+if 'autenticado' not in st.session_state:
+    st.session_state.autenticado = False
 
-    st.title("🔐 Acesso restrito")
-
-    senha = st.text_input(
-        "Digite a senha:",
-        type="password"
-    )
-
-    if st.button("Entrar"):
-        if senha == st.secrets["senha_app"]:
-            st.session_state.autenticado = True
-            st.rerun()
-        else:
-            st.error("Senha incorreta.")
-
-    return False
-
-
-if not verificar_senha():
+if not st.session_state.autenticado:
+    login()
     st.stop()
 
 st.title("Modelo de Recomendação do Instituto Inteligência de Dados - IID")
