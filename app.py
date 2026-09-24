@@ -197,17 +197,7 @@ if not os.path.exists(
     )
 
     st.stop()
-
-
 modelo = carregar_modelo()
-
-
-st.warning(
-    """
-    Aplicativo desenvolvido com base em modelos epidemiológicos.
-    O modelo deve estar sempre em revisão com profissionais de saúde.
-    """
-)
 ############Fim do Código Gerar Senha
 
 # ============================================================
