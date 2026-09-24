@@ -3,6 +3,7 @@ import joblib
 import pandas as pd
 import streamlit as st
 import hmac
+import unicodedata
 ##################### Gerar Senhas
 # ============================================================
 # CONFIGURAÇÃO ÚNICA DO STREAMLIT
@@ -22,29 +23,43 @@ def carregar_usuarios():
 
     except Exception:
         return None
+def normalizar_usuario(texto):
+    """Normaliza o usuário para aceitar João, joao, JOAO etc."""
+    texto = str(texto).strip().lower()
+    texto = unicodedata.normalize("NFD", texto)
+    return "".join(c for c in texto if unicodedata.category(c) != "Mn")
+
 def autenticar(usuario, senha):
 
     usuarios = carregar_usuarios()
 
     if usuarios is None:
-        return False, "Usuários ainda não configurados."
+        return False, "Usuários ainda não configurados no Streamlit Secrets."
 
-    if usuario not in usuarios:
+    usuario_digitado = normalizar_usuario(usuario)
+    usuario_encontrado = None
+
+    # Procura o usuário sem diferenciar maiúsculas/minúsculas
+    # e sem diferenciar acentos.
+    for chave in usuarios:
+        if normalizar_usuario(chave) == usuario_digitado:
+            usuario_encontrado = chave
+            break
+
+    if usuario_encontrado is None:
         return False, "Usuário ou senha inválidos."
 
-    senha_correta = str(
-        usuarios[usuario]["senha"]
-    )
+    try:
+        senha_correta = str(usuarios[usuario_encontrado]["senha"])
+    except Exception:
+        return False, "Configuração de senha inválida no Streamlit Secrets."
 
-    if hmac.compare_digest(
-        str(senha),
-        senha_correta
-    ):
+    if hmac.compare_digest(str(senha), senha_correta):
 
         nome = str(
-            usuarios[usuario].get(
+            usuarios[usuario_encontrado].get(
                 "nome",
-                usuario
+                usuario_encontrado
             )
         )
 
@@ -197,7 +212,7 @@ st.warning(
     O modelo deve estar sempre em revisão com profissionais de saúde.
     """
 )
-####################Fim do Código Gerar Senha
+############Fim do Código Gerar Senha
 
 # ============================================================
 # CARREGAR MODELO
