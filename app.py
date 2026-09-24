@@ -2,25 +2,19 @@ import os
 import joblib
 import pandas as pd
 import streamlit as st
-##################### Gerar Senhas
-import streamlit as st
 import hmac
-
+##################### Gerar Senhas
 # ============================================================
-# CONFIGURAÇÃO
+# CONFIGURAÇÃO ÚNICA DO STREAMLIT
 # ============================================================
-
 st.set_page_config(
-    page_title="Login",
-    page_icon="🔐",
-    layout="centered"
+    page_title="Classificação de Risco COVID",
+    page_icon="🩺",
+    layout="wide"
 )
-
-
 # ============================================================
-# FUNÇÃO PARA LER OS USUÁRIOS
+# LOGIN
 # ============================================================
-
 def carregar_usuarios():
 
     try:
@@ -28,12 +22,6 @@ def carregar_usuarios():
 
     except Exception:
         return None
-
-
-# ============================================================
-# FUNÇÃO DE AUTENTICAÇÃO
-# ============================================================
-
 def autenticar(usuario, senha):
 
     usuarios = carregar_usuarios()
@@ -63,14 +51,11 @@ def autenticar(usuario, senha):
         return True, nome
 
     return False, "Usuário ou senha inválidos."
-
-
 # ============================================================
 # CONTROLE DA SESSÃO
 # ============================================================
 
 if "autenticado" not in st.session_state:
-
     st.session_state.autenticado = False
 
 
@@ -97,13 +82,11 @@ if not st.session_state.autenticado:
         placeholder="Digite sua senha"
     )
 
-    entrar = st.button(
+    if st.button(
         "Entrar",
         use_container_width=True,
         type="primary"
-    )
-
-    if entrar:
+    ):
 
         if not usuario or not senha:
 
@@ -121,9 +104,7 @@ if not st.session_state.autenticado:
             if sucesso:
 
                 st.session_state.autenticado = True
-
                 st.session_state.usuario = usuario
-
                 st.session_state.nome_usuario = resultado
 
                 st.rerun()
@@ -132,23 +113,17 @@ if not st.session_state.autenticado:
 
                 st.error(resultado)
 
+    # Impede que o restante do aplicativo apareça
     st.stop()
 
 
 # ============================================================
-# ÁREA PROTEGIDA
+# USUÁRIO LOGADO
 # ============================================================
 
 nome_usuario = st.session_state.get(
     "nome_usuario",
-    st.session_state.get(
-        "usuario",
-        ""
-    )
-)
-
-st.success(
-    f"Login realizado com sucesso! Olá, {nome_usuario}."
+    st.session_state.get("usuario", "")
 )
 
 
@@ -156,33 +131,73 @@ st.success(
 # BOTÃO SAIR
 # ============================================================
 
-if st.button("🚪 Sair"):
+with st.sidebar:
 
-    st.session_state.autenticado = False
-
-    st.session_state.pop(
-        "usuario",
-        None
+    st.success(
+        f"👤 Usuário: {nome_usuario}"
     )
 
-    st.session_state.pop(
-        "nome_usuario",
-        None
+    if st.button(
+        "🚪 Sair",
+        use_container_width=True
+    ):
+
+        st.session_state.autenticado = False
+
+        st.session_state.pop(
+            "usuario",
+            None
+        )
+
+        st.session_state.pop(
+            "nome_usuario",
+            None
+        )
+
+        st.rerun()
+
+
+# ============================================================
+# A PARTIR DAQUI COMEÇA SEU CÓDIGO COVID
+# ============================================================
+
+ARQUIVO_MODELO = "modelo_covid.pkl"
+
+
+@st.cache_resource
+def carregar_modelo():
+
+    return joblib.load(
+        ARQUIVO_MODELO
     )
 
-    st.rerun()
-####################Fim do Código Gerar Senha
 
-# ============================================================
-# CONFIGURAÇÃO
-# ============================================================
+if not os.path.exists(
+    ARQUIVO_MODELO
+):
 
-st.set_page_config(
-    page_title="Classificação de Risco COVID",
-    page_icon="🩺",
-    layout="wide"
+    st.error(
+        "Modelo não encontrado. "
+        "Execute treinar_modelo.py antes de abrir o aplicativo."
+    )
+
+    st.stop()
+
+
+modelo = carregar_modelo()
+
+
+st.title(
+    "Modelo de Classificação Para Pacientes Suspeitos de COVID-19"
 )
 
+st.warning(
+    """
+    Aplicativo desenvolvido com base em modelos epidemiológicos.
+    O modelo deve estar sempre em revisão com profissionais de saúde.
+    """
+)
+####################Fim do Código Gerar Senha
 
 # ============================================================
 # CARREGAR MODELO
