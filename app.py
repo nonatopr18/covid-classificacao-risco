@@ -202,10 +202,6 @@ if not os.path.exists(
 modelo = carregar_modelo()
 
 
-st.title(
-    "Modelo de Classificação Para Pacientes Suspeitos de COVID-19"
-)
-
 st.warning(
     """
     Aplicativo desenvolvido com base em modelos epidemiológicos.
